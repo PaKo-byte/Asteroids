@@ -9,6 +9,7 @@ class Player(circleshape.CircleShape):
     def __init__(self, x:float, y:float) -> None:
         super().__init__(x, y, radius=constants.PLAYER_RADIUS)
         self.rotation: float = 0.0
+        self.shot_cooldown: float = 0
 
     # in the Player class
     def triangle(self) -> list[pygame.Vector2]:
@@ -34,6 +35,7 @@ class Player(circleshape.CircleShape):
 
     def update(self, dt: float) -> None:
             keys = pygame.key.get_pressed()
+            self.shot_cooldown -= dt
             if keys[pygame.K_LEFT]:
                 return self.rotate(-dt)
             if keys[pygame.K_RIGHT]:
@@ -46,7 +48,10 @@ class Player(circleshape.CircleShape):
                 return self.shoot()
 
     def shoot(self) -> None:
-       bulet = shot.Shot(self.position[0], self.position[1], constants.SHOT_RADIUS)
-       shoot_unit_vector = pygame.Vector2(0, 1)
-       shoot_rotated_vector = shoot_unit_vector.rotate(self.rotation)
-       bulet.velocity = shoot_rotated_vector * constants.PLAYER_SHOOT_SPEED
+        if self.shot_cooldown > 0:
+            return
+        self.shot_cooldown = constants.PLAYER_SHOOT_COOLDOWN_SECONDS
+        bulet = shot.Shot(self.position.x, self.position.y, constants.SHOT_RADIUS)
+        shoot_unit_vector = pygame.Vector2(0, 1)
+        shoot_rotated_vector = shoot_unit_vector.rotate(self.rotation)
+        bulet.velocity = shoot_rotated_vector * constants.PLAYER_SHOOT_SPEED
